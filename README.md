@@ -2,6 +2,8 @@
 
 This Python 3 script can be used to remap the Novation Launchpad to various isomorphic layouts. 
 
+**NOTE: this script is in early alpha stage. There are some serious issues to fix. Don't use it in production yet.**
+
 ## Requirements
 
 - [Mido](https://mido.readthedocs.io/)
