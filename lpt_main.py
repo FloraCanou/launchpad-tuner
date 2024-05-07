@@ -23,11 +23,11 @@ def get_coordinates (k):
 
 def wrapper (n):
     """
-    (tone - step, step) isomorphic layout coloring and mapping function. 
+    (tone - step, step) isomorphic layout lighting and mapping function. 
     In this layout, each note along the main diagonal line ascends by a whole tone. 
-    We're coloring these notes and all the duplicates thereof. 
-    Assume the base note is Db, we're coloring Db, Eb, F, G, A, B, C#, and D#. 
-    For plain-fifth edos we're also coloring D, E, F#, G#, Ab, Bb, C and D. 
+    We're lighting these notes and all the duplicates thereof. 
+    Assume the base note is Db, we're lighting Db, Eb, F, G, A, B, C#, and D#. 
+    For plain-fifth edos we're also lighting D, E, F#, G#, Ab, Bb, C and D. 
 
     low Db  = gray
     low D   = red
@@ -92,7 +92,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
 
     def transform (midi_note):
         """
-        Defines the mapping from midi note given by launchpad 
+        Defines the mapping from midi note given by Launchpad 
         to midi note in isomorphic layout.
         """
         row, col = get_coordinates (midi_note)
@@ -106,17 +106,22 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
 
     # transform the launchpad's midi input (mi) into custom midi output (mo)
     with mido.open_input (mi_launchpad_name) as mi, mido.open_output (mo_loopmidi_name) as mo:
-        control_row = 0
-        control_reg = 0
+        control_row, control_reg = 0, 0
+        note_old, note_new = 0, 0
         for msg in mi: # process midi messages from launchpad
             msg_to_send = msg.copy ()
             if msg.type == "control_change":
                 control_row = msg.control//10
                 control_reg = n if msg.value else 0
             if msg.type == "note_on":
-                msg_to_send = mido.Message ("note_on", note = transform (msg.note), velocity = msg.velocity)
+                # turn off equivalent midi note before repressing
+                if (note_new := transform (msg.note)) == note_old and msg.velocity:
+                    mo.send (mido.Message ("note_on", note = note_new, velocity = 0)) 
+                note_old = note_new # update last pressed note
 
-            # if not msg.type == "clock":
-            #     print (msg_to_send)
+                msg_to_send = mido.Message ("note_on", note = note_new, velocity = msg.velocity)
+
+            if not msg.type == "clock" and not msg.type == "aftertouch":
+                print (msg_to_send)
 
             mo.send (msg_to_send)
