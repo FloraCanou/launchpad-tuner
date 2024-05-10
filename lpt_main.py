@@ -98,7 +98,12 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
         to midi note in isomorphic layout.
         """
         row, col = get_coordinates (midi_note)
-        return (col - 1)*x + (row - 1)*y + base_note + (control_reg if row == control_row else 0)
+        base_and_offset = base_note + (col - 1)*x + (row - 1)*y
+        reg = control_reg if row == control_row else 0
+        if (result := base_and_offset + reg) < 0x80:
+            return result
+        else:
+            return base_and_offset
 
     with mido.open_output (mo_launchpad_name) as color:
         print ("Coloring..")
@@ -108,14 +113,14 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
 
     # transform the launchpad's midi input (mi) into custom midi output (mo)
     with mido.open_input (mi_launchpad_name) as mi, mido.open_output (mo_loopmidi_name) as mo:
-        control_row, control_reg = 0, 0
+        control_row, control_col, control_reg = 0, 0, 0
         note_state = dict () # for keeping track of equivalent notes being held
-        for note in range (0, 128):
+        for note in range (0, 0x80):
             note_state[note] = 0
         for msg in mi: # process midi messages from launchpad
             msg_to_send = msg.copy ()
             if msg.type == "control_change":
-                control_row = msg.control//10
+                control_row, control_col = get_coordinates (msg.control) #control_col is unused
 
                 # turn off all midi notes of the row before changing register
                 for k in range (1, 9):
