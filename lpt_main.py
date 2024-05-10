@@ -3,11 +3,10 @@
 
 from lpt_io import *
 
+# factory colors: 
 # 0x00 -- 0x03 grayscale
 # 0x04 -- 0x3B 14 chromas * 4 levels
 # 0x3C -- 0x7F other colors
-
-rb = [0x09, 0x11, 0x19, 0x29, 0x31, 0x39] # rb for rainbow
 
 def tone (n):
     """
@@ -21,7 +20,7 @@ def get_coordinates (k):
     k %= 100
     return k//10, k%10
 
-def wrapper (n):
+def chromatic (n):
     """
     (tone - step, step) isomorphic layout lighting and mapping function. 
     In this layout, each note along the main diagonal line ascends by a whole tone. 
@@ -47,7 +46,10 @@ def wrapper (n):
     high D# = gray
     """
     global mi_launchpad_name, mo_launchpad_name, mo_loopmidi_name
-    global rb
+    
+    # rb for rainbow
+    # basic palette along the main diagonal line
+    rb = [0x09, 0x11, 0x19, 0x29, 0x31, 0x39] 
     
     # approximate number of steps of the whole tone
     # and chroma for plain-fifth edos
