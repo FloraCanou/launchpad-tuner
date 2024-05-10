@@ -107,19 +107,34 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
     # transform the launchpad's midi input (mi) into custom midi output (mo)
     with mido.open_input (mi_launchpad_name) as mi, mido.open_output (mo_loopmidi_name) as mo:
         control_row, control_reg = 0, 0
-        note_old, note_new = 0, 0
+        note_state = dict () # for keeping track of equivalent notes being held
+        for note in range (0, 128):
+            note_state[note] = 0
         for msg in mi: # process midi messages from launchpad
             msg_to_send = msg.copy ()
             if msg.type == "control_change":
                 control_row = msg.control//10
+
+                # turn off all midi notes of the row before changing register
+                for k in range (1, 9):
+                    note = transform (control_row*10 + k)
+                    if note_state[note]:
+                        mo.send (mido.Message ("note_on", note = note, velocity = 0))
+                        note_state[note] -= 1
+                
                 control_reg = n if msg.value else 0
             if msg.type == "note_on":
+                note = transform (msg.note)
                 # turn off equivalent midi note before repressing
-                if (note_new := transform (msg.note)) == note_old and msg.velocity:
-                    mo.send (mido.Message ("note_on", note = note_new, velocity = 0)) 
-                note_old = note_new # update last pressed note
+                if msg.velocity:
+                    if note_state[note]: #if the note is already held
+                        mo.send (mido.Message ("note_on", note = note, velocity = 0)) 
+                    note_state[note] += 1
+                elif note_state[note]: #if we're releasing a note
+                    note_state[note] -= 1
+                # print (note_state[note])
 
-                msg_to_send = mido.Message ("note_on", note = note_new, velocity = msg.velocity)
+                msg_to_send = mido.Message ("note_on", note = note, velocity = msg.velocity)
 
             if not msg.type == "clock" and not msg.type == "aftertouch":
                 print (msg_to_send)
