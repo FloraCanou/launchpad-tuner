@@ -23,7 +23,7 @@ def get_coordinates (k):
 def chromatic (n):
     """
     (tone - step, step) isomorphic layout lighting and mapping function. 
-    In this layout, each note along the main diagonal line ascends by a whole tone. 
+    In this layout, each step along the main diagonal direction (bottom-left to top-right) ascends by a whole tone. 
     Assume the base note is Cb, our range is low Db to high D#. 
     We're lighting these notes and all the duplicates thereof, specifically 
     Db, Eb, F, G, A, B, C#, and D#. 
@@ -91,8 +91,20 @@ def chromatic (n):
                 color_map[k] = (rb[color_offset] - 4 - 4) % 0x38 + 4
     
     # we're mapping the low Cb to 0
+    note_D = t + chroma
+    note_A = 5*t
     if chroma:
-        print (f"Suggested reference midi note: D4 = {t + chroma}")
+        print (
+            f"Suggested reference midi note: \n"
+            f"Piccolo    in C: D5 = {note_D}\n"
+            f"Treble     in F: D5 = {note_A}\n"
+            f"Soprano    in C: D4 = {note_D}\n"
+            f"Alto       in F: D4 = {note_A}\n"
+            f"Tenor      in C: D3 = {note_D}\n"
+            f"Baritone   in F: D3 = {note_A}\n"
+            f"Bass       in C: D2 = {note_D}\n"
+            f"Contrabass in F: D2 = {note_A}"
+        )
     mapping (n, x = t - 1, y = 1, color_map = color_map, base_note = 0)
 
 def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
@@ -100,7 +112,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
     (x, y) isomorphic layout mapping function
     with register keys for each row that move the notes by n steps. 
     color_map: a 100-entry (0 to 99) list of colors from Launchpad's color palette. 
-    base_note: theoretical key at bottom left (where *setup* is).
+    base_note: theoretical note to the bottom left of the pads (where *setup* is).
     """
     global mi_launchpad_name, mo_launchpad_name, mo_loopmidi_name
 
