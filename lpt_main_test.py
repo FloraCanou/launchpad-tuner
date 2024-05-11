@@ -23,7 +23,7 @@ def mapping_basic (vel = 96):
 def mapping_xy (x, y, base_note = 60, vel = 96):
     """
     (x, y) isomorphic layout mapping function.
-    base_note: pad at bottom left.
+    base_note: theoretical key at bottom left (where *setup* is).
     vel: buttons not pressure-sensitive get this velocity.
     """
     global mi_launchpad_name, mo_loopmidi_name
@@ -38,7 +38,7 @@ def mapping_xy (x, y, base_note = 60, vel = 96):
         to midi note in isomorphic layout.
         """
         row, col = get_coordinates (midi_note)
-        return (col - 1)*x + (row - 1)*y + base_note
+        return col*x + row*y + base_note
     
     # transform the launchpad's midi input (mi) into custom midi output (mo)
     with mido.open_input (mi_launchpad_name) as mi, mido.open_output (mo_loopmidi_name) as mo:

@@ -24,10 +24,13 @@ def chromatic (n):
     """
     (tone - step, step) isomorphic layout lighting and mapping function. 
     In this layout, each note along the main diagonal line ascends by a whole tone. 
-    We're lighting these notes and all the duplicates thereof. 
-    Assume the base note is Db, we're lighting Db, Eb, F, G, A, B, C#, and D#. 
-    For plain-fifth edos we're also lighting D, E, F#, G#, Ab, Bb, C and D. 
+    Assume the base note is Cb, our range is low Db to high D#. 
+    We're lighting these notes and all the duplicates thereof, specifically 
+    Db, Eb, F, G, A, B, C#, and D#. 
+    For plain-fifth edos we're also lighting 
+    D, E, F#, G#, Ab, Bb, C and D. 
 
+    Color codes: 
     low Db  = gray
     low D   = red
     Eb      = orange
@@ -56,6 +59,12 @@ def chromatic (n):
     t = tone (n)
     chroma = (7*t - n)//2 if (n + t) % 2 == 0 else None
 
+    # overflow protection
+    if 9*t >= 0x80: # raise for edos >= 86
+        raise ValueError ("Edo is too large to be mapped.")
+    elif 9*t + n >= 0x80: # warn for edos >= 51
+        warnings.warn ("Octave keys will be disabled for some notes. ")
+
     color_map = [0x00]*100
     for k in range (0, 100):
         row, col = get_coordinates (k)
@@ -80,15 +89,18 @@ def chromatic (n):
                     and col + (row - col)//t >= 4): # don't light Gb
                 color_offset = (col + (row - col)//t - 1) % 6
                 color_map[k] = (rb[color_offset] - 4 - 4) % 0x38 + 4
-        
-    mapping (n, x = t - 1, y = 1, color_map = color_map, base_note = n)
+    
+    # we're mapping the low Cb to 0
+    if chroma:
+        print (f"Suggested reference midi note: D4 = {t + chroma}")
+    mapping (n, x = t - 1, y = 1, color_map = color_map, base_note = 0)
 
 def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
     """
     (x, y) isomorphic layout mapping function
     with register keys for each row that move the notes by n steps. 
     color_map: a 100-entry (0 to 99) list of colors from Launchpad's color palette. 
-    base_note: pad at bottom left.
+    base_note: theoretical key at bottom left (where *setup* is).
     """
     global mi_launchpad_name, mo_launchpad_name, mo_loopmidi_name
 
@@ -98,7 +110,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
         to midi note in isomorphic layout.
         """
         row, col = get_coordinates (midi_note)
-        base_and_offset = base_note + (col - 1)*x + (row - 1)*y
+        base_and_offset = base_note + col*x + row*y
         reg = control_reg if row == control_row else 0
         if (result := base_and_offset + reg) < 0x80:
             return result
