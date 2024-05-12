@@ -115,6 +115,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
     base_note: theoretical note to the bottom left of the pads (where *setup* is).
     """
     global mi_launchpad_name, mo_launchpad_name, mo_loopmidi_name
+    t = tone (n)
 
     def transform (midi_note):
         """
@@ -123,8 +124,9 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
         """
         row, col = get_coordinates (midi_note)
         base_and_offset = base_note + col*x + row*y
-        reg = n if control_state[row] else 0
-        if (result := base_and_offset + reg) < 0x80:
+        reg = n if control_r0_state[row] else 0
+        alt = (t if control_c9_state[col] else 0) - (t if control_c0_state[col] else 0)
+        if (result := base_and_offset + reg  + alt) < 0x80:
             return result
         else:
             return base_and_offset
@@ -137,30 +139,52 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
 
     # transform the launchpad's midi input (mi) into custom midi output (mo)
     with mido.open_input (mi_launchpad_name) as mi, mido.open_output (mo_loopmidi_name) as mo:
-        control_row, control_col = 0, 0
-        note_state = dict () # for keeping track of equivalent notes being held
-        for note in range (0, 0x80):
-            note_state[note] = 0
-        control_state = dict () # for keeping track of register keys being held
-        for control_row in range (1, 9):
-            control_state[control_row] = 0
+        note_state = {key: 0 for key in range (0x80)} # for keeping track of equivalent notes being held
+        control_r0_state, control_r9_state, control_c0_state, control_c9_state \
+            = ({key: 0 for key in range (10)} for _ in range (4)) # for keeping track of control keys being held
         for msg in mi: # process midi messages from launchpad
             msg_to_send = msg.copy ()
             if msg.type == "control_change":
-                control_row, control_col = get_coordinates (msg.control) #control_col is unused
+                control_row, control_col = get_coordinates (msg.control)
 
-                # turn off all midi notes of the row before changing register
-                for k in range (1, 9):
-                    note = transform (control_row*10 + k)
-                    if note_state[note]:
-                        mo.send (mido.Message ("note_on", note = note, velocity = 0))
-                        note_state[note] -= 1
-                if msg.value:
-                    control_state[control_row] += 1
-                else:
-                    control_state[control_row] -= 1
-                # print (control_row, control_state[control_row], sep = ", ")
-                
+                if control_col == 0: # left control keys
+                    # turn off all midi notes of the row before changing register
+                    for col in range (1, 9):
+                        note = transform (control_row*10 + col)
+                        if note_state[note]:
+                            mo.send (mido.Message ("note_on", note = note, velocity = 0))
+                            note_state[note] -= 1
+                    if msg.value:
+                        control_r0_state[control_row] += 1
+                    else:
+                        control_r0_state[control_row] -= 1
+                    # print (control_row, control_r0_state[control_row], sep = ", ")
+                elif control_col == 9: #right control keys
+                    pass
+                if control_row == 0: # bottom control keys
+                    # turn off all midi notes of the column before tone-shifting
+                    for row in range (1, 9):
+                        note = transform (row*10 + control_col)
+                        if note_state[note]:
+                            mo.send (mido.Message ("note_on", note = note, velocity = 0))
+                            note_state[note] -= 1
+                    if msg.value:
+                        control_c0_state[control_col] += 1
+                    else:
+                        control_c0_state[control_col] -= 1
+                    # print (control_col, control_c0_state[control_col], sep = ", ")
+                elif control_row == 9: # top control keys
+                    # turn off all midi notes of the column before tone-shifting
+                    for row in range (1, 9):
+                        note = transform (row*10 + control_col)
+                        if note_state[note]:
+                            mo.send (mido.Message ("note_on", note = note, velocity = 0))
+                            note_state[note] -= 1
+                    if msg.value:
+                        control_c9_state[control_col] += 1
+                    else:
+                        control_c9_state[control_col] -= 1
+                    # print (control_col, control_c9_state[control_col], sep = ", ")
             if msg.type == "note_on":
                 note = transform (msg.note)
                 # turn off equivalent midi note before repressing

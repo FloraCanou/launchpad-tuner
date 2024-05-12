@@ -63,10 +63,8 @@ The low Db and high D# are nominally the lowest and highest notes available in t
 
 #### Register Keys
 
-The keys on both sides act as register keys, each bumps the corresponding *row* by a full octave, essentially doubling the range of the instrument. 
+The left-hand side control keys act as register keys, each bumps the corresponding *row* by a full octave, essentially doubling the range of the instrument. 
 
-#### Hacker Keys
+#### Tone-Shifting Keys
 
-**Not implemented yet.**
-
-This will enable the access to the low C, low Cb, high E, and high E#. 
+The top and bottom control keys act as tone-shifting keys. Each top control key raises the corresponding *column* by a whole tone, enabling the access to the range of high E to high E#. Each bottom control key lowers the corresponding *column* by the same amount, enabling the access to the range of low C to low Cb. 
