@@ -62,8 +62,8 @@ def chromatic (n):
     # overflow protection
     if 9*t >= 0x80: # raise for edos >= 86
         raise ValueError ("Edo is too large to be mapped.")
-    elif 9*t + n >= 0x80: # warn for edos >= 51
-        warnings.warn ("Octave keys will be disabled for some notes. ")
+    elif 9*t + n >= 0x80: # warn for edos between 51 and 85
+        warnings.warn ("Register and/or tone-shifting keys will be disabled for some notes. ")
 
     color_map = [0x00]*100
     for k in range (0, 100):
@@ -91,19 +91,18 @@ def chromatic (n):
                 color_map[k] = (rb[color_offset] - 4 - 4) % 0x38 + 4
     
     # we're mapping the low Cb to 0
-    note_D = t + chroma
-    note_A = 5*t
     if chroma:
+        note_series = [t + chroma, 5*t]
         print (
             f"Suggested reference midi note: \n"
-            f"Piccolo    in C: D5 = {note_D}\n"
-            f"Treble     in F: D5 = {note_A}\n"
-            f"Soprano    in C: D4 = {note_D}\n"
-            f"Alto       in F: D4 = {note_A}\n"
-            f"Tenor      in C: D3 = {note_D}\n"
-            f"Baritone   in F: D3 = {note_A}\n"
-            f"Bass       in C: D2 = {note_D}\n"
-            f"Contrabass in F: D2 = {note_A}"
+            f"Piccolo    in C: D5 = {note_series[0]}\n"
+            f"Treble     in F: D5 = {note_series[1]}\n"
+            f"Soprano    in C: D4 = {note_series[0]}\n"
+            f"Alto       in F: D4 = {note_series[1]}\n"
+            f"Tenor      in C: D3 = {note_series[0]}\n"
+            f"Baritone   in F: D3 = {note_series[1]}\n"
+            f"Bass       in C: D2 = {note_series[0]}\n"
+            f"Contrabass in F: D2 = {note_series[1]}"
         )
     mapping (n, x = t - 1, y = 1, color_map = color_map, base_note = 0)
 
@@ -126,7 +125,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
         base_and_offset = base_note + col*x + row*y
         reg = n if control_r0_state[row] else 0
         alt = (t if control_c9_state[col] else 0) - (t if control_c0_state[col] else 0)
-        if (result := base_and_offset + reg  + alt) < 0x80:
+        if (result := base_and_offset + reg  + alt) // 0x80 == 0:
             return result
         else:
             return base_and_offset
