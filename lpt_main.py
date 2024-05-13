@@ -152,7 +152,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                         note = transform (control_row*10 + col)
                         if note_state[note]:
                             mo.send (mido.Message ("note_on", note = note, velocity = 0))
-                            note_state[note] -= 1
+                            note_state[note] = 0
                     if msg.value:
                         control_r0_state[control_row] += 1
                     else:
@@ -166,7 +166,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                         note = transform (row*10 + control_col)
                         if note_state[note]:
                             mo.send (mido.Message ("note_on", note = note, velocity = 0))
-                            note_state[note] -= 1
+                            note_state[note] = 0
                     if msg.value:
                         control_c0_state[control_col] += 1
                     else:
@@ -178,7 +178,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                         note = transform (row*10 + control_col)
                         if note_state[note]:
                             mo.send (mido.Message ("note_on", note = note, velocity = 0))
-                            note_state[note] -= 1
+                            note_state[note] = 0
                     if msg.value:
                         control_c9_state[control_col] += 1
                     else:
@@ -187,12 +187,9 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
             if msg.type == "note_on":
                 note = transform (msg.note)
                 # turn off equivalent midi note before repressing
-                if msg.velocity:
-                    if note_state[note]: #if the note is already held
-                        mo.send (mido.Message ("note_on", note = note, velocity = 0)) 
-                    note_state[note] += 1
-                elif note_state[note]: #if we're releasing a note
-                    note_state[note] -= 1
+                if msg.velocity and note_state[note]: #if the note is already held
+                    mo.send (mido.Message ("note_on", note = note, velocity = 0)) 
+                note_state[note] = msg.velocity
                 # print (note_state[note])
 
                 msg_to_send = mido.Message ("note_on", note = note, velocity = msg.velocity)
