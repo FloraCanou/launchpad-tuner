@@ -95,14 +95,16 @@ def chromatic (n):
         note_series = [t + chroma, 5*t]
         print (
             f"Suggested reference midi note: \n"
-            f"Piccolo    in C: D5 = {note_series[0]}\n"
-            f"Treble     in F: D5 = {note_series[1]}\n"
-            f"Soprano    in C: D4 = {note_series[0]}\n"
-            f"Alto       in F: D4 = {note_series[1]}\n"
-            f"Tenor      in C: D3 = {note_series[0]}\n"
-            f"Baritone   in F: D3 = {note_series[1]}\n"
-            f"Bass       in C: D2 = {note_series[0]}\n"
-            f"Contrabass in F: D2 = {note_series[1]}"
+            f"Contratreble in F: D6 = {note_series[1]}\n"
+            f"Piccolo      in C: D5 = {note_series[0]}\n"
+            f"Treble       in F: D5 = {note_series[1]}\n"
+            f"Soprano      in C: D4 = {note_series[0]}\n"
+            f"Alto         in F: D4 = {note_series[1]}\n"
+            f"Tenor        in C: D3 = {note_series[0]}\n"
+            f"Baritone     in F: D3 = {note_series[1]}\n"
+            f"Bass         in C: D2 = {note_series[0]}\n"
+            f"Great Bass   in F: D2 = {note_series[1]}\n"
+            f"Contrabass   in C: D1 = {note_series[0]}"
         )
     mapping (n, x = t - 1, y = 1, color_map = color_map, base_note = 0)
 
