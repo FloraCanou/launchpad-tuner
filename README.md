@@ -65,6 +65,10 @@ The low Db and high D# are nominally the lowest and highest notes available in t
 
 The left-hand side control keys act as register keys, each bumps the corresponding *row* by a full octave, essentially doubling the range of the instrument. 
 
+Holding a register key while playing an affected note will bump the note to the second register, whereas releasing the register key will simply turn off the note. This is designed to facilitate playing in the second register. 
+
 #### Tone-Shifting Keys
 
 The top and bottom control keys act as tone-shifting keys. Each top control key raises the corresponding *column* by a whole tone, enabling the access to the range of high E to high E#. Each bottom control key lowers the corresponding *column* by the same amount, enabling the access to the range of low C to low Cb. 
+
+Like the register keys, holding a tone-shifting key while playing an affected note will shift the note's pitch. Unlike the register keys, releasing a tone-shifting key will shift the note's pitch back to the original. 

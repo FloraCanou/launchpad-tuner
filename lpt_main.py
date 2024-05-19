@@ -147,51 +147,99 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                 control_row, control_col = get_coordinates (msg.control)
 
                 if control_col == 0: # left control keys
-                    # turn off all midi notes of the row before changing register
+                    # move all midi notes of the row to the new register
+                    # on holding the register key
                     for col in range (1, 9):
-                        note = transform (control_row*10 + col)
-                        if note_state[note]:
-                            mo.send (mido.Message ("note_on", note = note, velocity = 0))
-                            note_state[note] = 0
-                    if msg.value:
-                        control_r0_state[control_row] += 1
-                    else:
-                        control_r0_state[control_row] -= 1
+                        # get the old note
+                        control_r0_state[control_row] = not bool (msg.value)
+                        note_old = transform (control_row*10 + col)
+
+                        # if we find an old note that's on
+                        if note_state[note_old]: 
+                            # turn off the old note
+                            mo.send (mido.Message ("note_on", note = note_old, velocity = 0))
+
+                            if msg.value:
+                                # get the new note
+                                control_r0_state[control_row] = True
+                                note_new = transform (control_row*10 + col)
+
+                                # turn on the new note with the old note's original velocity
+                                mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
+
+                                # record the new note
+                                note_state[note_new] = note_state[note_old]
+                            
+                            # clear the old note
+                            note_state[note_old] = 0
+                    
+                    # set the control state
+                    control_r0_state[control_row] = bool (msg.value)
                     # print (control_row, control_r0_state[control_row], sep = ", ")
+
                 elif control_col == 9: #right control keys
                     pass
+
                 if control_row == 0: # bottom control keys
-                    # turn off all midi notes of the column before tone-shifting
+                    # tone-shift all midi notes of the column
                     for row in range (1, 9):
-                        note = transform (row*10 + control_col)
-                        if note_state[note]:
-                            mo.send (mido.Message ("note_on", note = note, velocity = 0))
-                            note_state[note] = 0
-                    if msg.value:
-                        control_c0_state[control_col] += 1
-                    else:
-                        control_c0_state[control_col] -= 1
+                        # get the old note
+                        control_c0_state[control_col] = not bool (msg.value)
+                        note_old = transform (row*10 + control_col)
+
+                        # if we find an old note that's on
+                        if note_state[note_old]: 
+                            # turn off the old note
+                            mo.send (mido.Message ("note_on", note = note_old, velocity = 0))
+
+                            # get the new note
+                            control_c0_state[control_col] = bool (msg.value)
+                            note_new = transform (row*10 + control_col)
+
+                            # turn on the new note with the old note's original velocity
+                            mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
+
+                            # record the new note and clear the old note
+                            note_state[note_new] = note_state[note_old]
+                            note_state[note_old] = 0
+                    
+                    # set the control state
+                    control_c0_state[control_col] = bool (msg.value)
                     # print (control_col, control_c0_state[control_col], sep = ", ")
+
                 elif control_row == 9: # top control keys
-                    # turn off all midi notes of the column before tone-shifting
+                    # tone-shift all midi notes of the column
                     for row in range (1, 9):
-                        note = transform (row*10 + control_col)
-                        if note_state[note]:
-                            mo.send (mido.Message ("note_on", note = note, velocity = 0))
-                            note_state[note] = 0
-                    if msg.value:
-                        control_c9_state[control_col] += 1
-                    else:
-                        control_c9_state[control_col] -= 1
+                        # get the old note
+                        control_c9_state[control_col] = not bool (msg.value)
+                        note_old = transform (row*10 + control_col)
+
+                        # if we find an old note that's on
+                        if note_state[note_old]: 
+                            # turn off the old note
+                            mo.send (mido.Message ("note_on", note = note_old, velocity = 0))
+
+                            # get the new note
+                            control_c9_state[control_col] = bool (msg.value)
+                            note_new = transform (row*10 + control_col)
+
+                            # turn on the new note with the old note's original velocity
+                            mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
+
+                            # record the new note and clear the old note
+                            note_state[note_new] = note_state[note_old]
+                            note_state[note_old] = 0
+                    
+                    # set the control state
+                    control_c9_state[control_col] = bool (msg.value)
                     # print (control_col, control_c9_state[control_col], sep = ", ")
+
             if msg.type == "note_on":
                 note = transform (msg.note)
                 # turn off equivalent midi note before repressing
                 if msg.velocity and note_state[note]: #if the note is already held
                     mo.send (mido.Message ("note_on", note = note, velocity = 0)) 
                 note_state[note] = msg.velocity
-                # print (note_state[note])
-
                 msg_to_send = mido.Message ("note_on", note = note, velocity = msg.velocity)
 
             mo.send (msg_to_send)
