@@ -60,10 +60,19 @@ def chromatic (n):
     chroma = (7*t - n)//2 if (n + t) % 2 == 0 else None
 
     # overflow protection
-    if 9*t >= 0x80: # raise for edos >= 86
+    if 8*t >= 0x80: # raise for edos >= 92
         raise ValueError ("Edo is too large to be mapped.")
-    elif 9*t + n >= 0x80: # warn for edos between 51 and 85
-        warnings.warn ("Register and/or tone-shifting keys will be disabled for some notes. ")
+    elif 9*t >= 0x80: # warn for edos between 86 and 91
+        warnings.warn ("Many notes will be skipped. Register keys will be disabled for most notes. Tone-shifting keys will be disabled for some notes. ")
+        compromise_offset = -chroma if chroma else -t//2
+    elif 8*t + n >= 0x80: # warn for edos between 56 and 85
+        warnings.warn ("Some notes will be skipped and register keys will be disabled for some notes. ")
+        compromise_offset = 0
+    elif 9*t + n >= 0x80: # warn for edos between 51 and 55
+        warnings.warn ("Tone-shifting keys will be disabled for some notes. ")
+        compromise_offset = -chroma if chroma else -t//2
+    else:
+        compromise_offset = 0
 
     color_map = [0x00]*100
     for k in range (0, 100):
@@ -79,20 +88,23 @@ def chromatic (n):
             color_offset = (col + (row - col)//t - 2) % 6
             color_map[k] = rb[color_offset]
         elif chroma:
-            # light D, E, F#, G#
+            # light low D, E, F#, and G# above G
             if ((row - col) % t % chroma == 0 and (row - col) % t // chroma == 1
-                    and col + (row - col)//t <= 4): # don't light A#
+                    # and col + (row - col)//t <= 4): 
+                    and col <= 4): # only light the G# above G
                 color_offset = (col + (row - col)//t - 2) % 6
                 color_map[k] = (rb[color_offset] + 4 - 4) % 0x38 + 4
-            # light Ab, Bb, C and D
+            # light high D, C, Bb, and Ab below A
             elif ((col - row) % t % chroma == 0 and (col - row) % t // chroma == 1
-                    and col + (row - col)//t >= 4): # don't light Gb
+                    # and col + (row - col)//t >= 4): 
+                    and col >= 5): # only light the Ab below A
                 color_offset = (col + (row - col)//t - 1) % 6
                 color_map[k] = (rb[color_offset] - 4 - 4) % 0x38 + 4
     
-    # we're mapping the low Cb to 0
+    # we're mapping the low Cb to 0 if it's not compromised
+    # otherwise we're mapping the low C to 0
     if chroma:
-        note_series = [t + chroma, 5*t]
+        note_series = [t + chroma + compromise_offset, 5*t + compromise_offset]
         print (
             f"Suggested reference midi note: \n"
             f"Contratreble in F: D6 = {note_series[1]}\n"
@@ -106,7 +118,7 @@ def chromatic (n):
             f"Great Bass   in F: D2 = {note_series[1]}\n"
             f"Contrabass   in C: D1 = {note_series[0]}"
         )
-    mapping (n, x = t - 1, y = 1, color_map = color_map, base_note = 0)
+    mapping (n, x = t - 1, y = 1, color_map = color_map, base_note = compromise_offset)
 
 def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
     """

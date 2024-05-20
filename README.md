@@ -72,3 +72,27 @@ Holding a register key while playing an affected note will bump the note to the 
 The top and bottom control keys act as tone-shifting keys. Each top control key raises the corresponding *column* by a whole tone, enabling the access to the range of high E to high E#. Each bottom control key lowers the corresponding *column* by the same amount, enabling the access to the range of low C to low Cb. 
 
 Like the register keys, holding a tone-shifting key while playing an affected note will shift the note's pitch. Unlike the register keys, releasing a tone-shifting key will shift the note's pitch back to the original. 
+
+## Edo Size Limitations
+
+The edo size is limited by the layout as well as the MIDI standard. 
+
+**1–50**:blue_circle:
+
+Full two-and-a-half-octave range is supported.
+
+**51–55**:green_circle:
+
+Similar to smaller edos but notes below low C and above high E are compromised. 
+
+**56–85**:yellow_circle:
+
+Some notes are skipped and higher notes of the second register are increasingly unavailable. At the large end only one register's range is guaranteed. 
+
+**86–91**:orange_circle:
+
+Many notes are skipped and certain tone-shifted lowest and highest notes of the first register are also compromised. 
+
+**92+**:red_circle:
+
+An error will be raised. 
