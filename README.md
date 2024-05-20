@@ -77,22 +77,22 @@ Like the register keys, holding a tone-shifting key while playing an affected no
 
 The edo size is limited by the layout as well as the MIDI standard. 
 
-:large_blue_circle:**1–50**
+**1–50**:large_blue_circle:
 
 Full two-and-a-half-octave range is supported.
 
-:green_circle:**51–55**
+**51–55**:green_circle:
 
-Similar to smaller edos but notes below low C and above high E are compromised. 
+Similar to smaller edos but notes below low C and/or above high E are compromised. 
 
-:yellow_circle:**56–85**
+**56–85**:yellow_circle:
 
 Some notes are skipped and higher notes of the second register are increasingly unavailable. At the large end only one register's range is guaranteed. 
 
-:orange_circle:**86–91**
+**86–91**:orange_circle:
 
-Many notes are skipped and certain tone-shifted lowest and highest notes of the first register are also compromised. 
+Many notes are skipped and notes below low C and/or above high E of the first register are also compromised. 
 
-:red_circle:**92+**
+**92+**:red_circle:
 
 An error will be raised. 
