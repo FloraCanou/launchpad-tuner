@@ -212,7 +212,6 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                         if key_state[key]: 
                             # turn off the old note
                             mo.send (mido.Message ("note_on", note = note_old, velocity = 0))
-                            print (f"turned off {note_old}")
 
                             # get the new note
                             control_c0_state[control_col] = bool (msg.value)
@@ -223,7 +222,6 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                             if note_state[note_new]: 
                                 mo.send (mido.Message ("note_on", note = note_new, velocity = 0))
                             mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
-                            print (f"turned on {note_new}")
 
                             # record the new note and clear the old note
                             note_state[note_new] = note_state[note_old]
@@ -245,7 +243,6 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                         if key_state[key]: 
                             # turn off the old note
                             mo.send (mido.Message ("note_on", note = note_old, velocity = 0))
-                            print (f"turned off {note_old}")
 
                             # get the new note
                             control_c9_state[control_col] = bool (msg.value)
@@ -256,7 +253,6 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                             if note_state[note_new]: 
                                 mo.send (mido.Message ("note_on", note = note_new, velocity = 0))
                             mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
-                            print (f"turned on {note_new}")
 
                             # record the new note and clear the old note
                             note_state[note_new] = note_state[note_old]
