@@ -163,7 +163,7 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
 
                 if control_col == 0: # left control keys
                     # move all midi notes of the row to the new register
-                    # on holding the register key
+                    # on activating the register key
                     for col in range (1, 9):
                         # get the key and the old note it's mapped to
                         key = control_row*10 + col
@@ -175,12 +175,16 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                             # turn off the old note
                             mo.send (mido.Message ("note_on", note = note_old, velocity = 0))
 
+                            # if we're activating the register key
                             if msg.value:
                                 # get the new note
                                 control_r0_state[control_row] = True
                                 note_new = transform (key)
 
-                                # turn on the new note with the old note's original velocity
+                                # turn off the new note if it's on, and then
+                                # turn it on with the old note's original velocity
+                                if note_state[note_new]: 
+                                    mo.send (mido.Message ("note_on", note = note_new, velocity = 0))
                                 mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
 
                                 # record the new note
@@ -214,7 +218,10 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                             control_c0_state[control_col] = bool (msg.value)
                             note_new = transform (key)
 
-                            # turn on the new note with the old note's original velocity
+                            # turn off the new note if it's on, and then
+                            # turn it on with the old note's original velocity
+                            if note_state[note_new]: 
+                                mo.send (mido.Message ("note_on", note = note_new, velocity = 0))
                             mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
                             print (f"turned on {note_new}")
 
@@ -244,7 +251,10 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                             control_c9_state[control_col] = bool (msg.value)
                             note_new = transform (key)
 
-                            # turn on the new note with the old note's original velocity
+                            # turn off the new note if it's on, and then
+                            # turn it on with the old note's original velocity
+                            if note_state[note_new]: 
+                                mo.send (mido.Message ("note_on", note = note_new, velocity = 0))
                             mo.send (mido.Message ("note_on", note = note_new, velocity = note_state[note_old]))
                             print (f"turned on {note_new}")
 
@@ -260,10 +270,10 @@ def mapping (n, x, y, color_map = [0x00]*100, base_note = 60):
                 key = msg.note
                 note = transform (key)
 
-                # turn off the note if it's already on
-                # and then turn it on with the new velocity
+                # turn off the note if it's on, and then
+                # turn it on with the new velocity
                 if msg.velocity and note_state[note]: 
-                    mo.send (mido.Message ("note_on", note = note, velocity = 0)) 
+                    mo.send (mido.Message ("note_on", note = note, velocity = 0))
                 msg_to_send = mido.Message ("note_on", note = note, velocity = msg.velocity)
 
                 # record the states
