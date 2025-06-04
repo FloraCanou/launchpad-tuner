@@ -107,9 +107,9 @@ def chromatic (n):
         note_series = [t + chroma + compromise_offset, 5*t + compromise_offset]
         print (
             f"Suggested reference midi note: \n"
-            f"Contratreble in F: D6 = {note_series[1]}\n"
+            f"Piccolino    in F: D6 = {note_series[1]}\n"
             f"Piccolo      in C: D5 = {note_series[0]}\n"
-            f"Treble       in F: D5 = {note_series[1]}\n"
+            f"Sopranino    in F: D5 = {note_series[1]}\n"
             f"Soprano      in C: D4 = {note_series[0]}\n"
             f"Alto         in F: D4 = {note_series[1]}\n"
             f"Tenor        in C: D3 = {note_series[0]}\n"
